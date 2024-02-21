@@ -152,6 +152,30 @@ df_csv['date'] = df_csv['ds'].dt.date
 df_csv.drop(columns=['ds'], inplace=True)
 df_csv.rename(columns={'date': 'ds'}, inplace=True)
 df_csv['ds'] = pd.to_datetime(df_csv['ds'])
+df_csv['time_low'] = pd.to_datetime(df_csv['time_low'])
+df_csv['time_high'] = pd.to_datetime(df_csv['time_high'])
+
+# Extract relevant features
+df_csv['hour_low'] = df_csv['time_low'].dt.hour
+df_csv['minute_low'] = df_csv['time_low'].dt.minute
+df_csv['second_low'] = df_csv['time_low'].dt.second
+
+df_csv['hour_high'] = df_csv['time_high'].dt.hour
+df_csv['minute_high'] = df_csv['time_high'].dt.minute
+df_csv['second_high'] = df_csv['time_high'].dt.second
+df_csv.drop(columns=['time_low', 'time_high'], inplace=True)
+
+df_csv['ds'] = pd.to_datetime(df_csv['ds'])
+
+# Extract relevant features
+df_csv['year'] = df_csv['ds'].dt.year
+df_csv['month'] = df_csv['ds'].dt.month
+df_csv['day'] = df_csv['ds'].dt.day
+df_csv['day_of_week'] = df_csv['ds'].dt.dayofweek
+df_csv['day_of_week_sin'] = np.sin(2 * np.pi * df_csv['day_of_week'])
+df_csv['day_of_week_cos'] = np.cos(2 * np.pi * df_csv['day_of_week'])
+df_csv.drop(columns=['day_of_week', 'ds'], inplace=True)
+
 df_csv = calculate_technical_indicators(df_csv)
 df_csv = preprocess_data(df_csv)
 
@@ -165,13 +189,13 @@ features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA
                      'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
                      'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
                      'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
-                     'close_std', 'close_detrended']
+                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
 
 features_to_scale1 = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
                      'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
                      'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
                      'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
-                     'close_std', 'close_detrended']
+                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
 
 # Initialize the scaler
 scaler = StandardScaler()
@@ -229,7 +253,6 @@ X_test_minmax = test_data_minmax.drop(columns=["y", "low"])
 y_train_minmax = train_data_minmax[["y", "low"]]
 y_test_minmax = test_data_minmax[["y", "low"]]
 
-'''
 # 1. ARIMA Model
 arima_model = ARIMA(y_train['y'], order=(5, 1, 0))  # Example order, you may need to tune this
 arima_model_fit = arima_model.fit()
@@ -376,4 +399,4 @@ plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
-'''
+
