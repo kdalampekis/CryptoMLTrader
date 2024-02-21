@@ -172,8 +172,6 @@ df_csv.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 
 
 # Extract relevant features
-
-
 df_csv = calculate_technical_indicators(df_csv)
 df_csv = preprocess_data(df_csv)
 df_csv_sorted = df_csv.sort_values(by='ds', ascending=True)
@@ -374,20 +372,20 @@ arima_minmax_mae = mean_absolute_error(y_test_minmax['y'], arima_minmax_forecast
 arima_minmax_rmse_low = mean_squared_error(y_test_minmax['low'], arima_minmax_forecast_low, squared=False)
 arima_minmax_mae_low = mean_absolute_error(y_test_minmax['low'], arima_minmax_forecast_low)
 
-print("ARIMA Model RMSE:", arima_rmse)
-print("ARIMA Model MAE:", arima_mae)
+print("ARIMA Model RMSE High:", arima_rmse)
+print("ARIMA Model MAE High:", arima_mae)
 
 print("ARIMA Model RMSE Low:", arima_rmse_low)
 print("ARIMA Model MAE Low:", arima_mae_low)
 
-print("ARIMA Standard Model RMSE:", arima_standard_rmse)
-print("ARIMA Standard Model MAE:", arima_standard_mae)
+print("ARIMA Standard Model RMSE High:", arima_standard_rmse)
+print("ARIMA Standard Model MAE High:", arima_standard_mae)
 
 print("ARIMA Standard Model RMSE Low:", arima_standard_rmse_low)
 print("ARIMA Standard Model MAE Low:", arima_standard_mae_low)
 
-print("ARIMA MinMax Model RMSE:", arima_minmax_rmse)
-print("ARIMA MinMax Model MAE:", arima_minmax_mae)
+print("ARIMA MinMax Model RMSE High:", arima_minmax_rmse)
+print("ARIMA MinMax Model MAE High:", arima_minmax_mae)
 
 print("ARIMA MinMax Model RMSE Low:", arima_minmax_rmse_low)
 print("ARIMA MinMax Model MAE Low:", arima_minmax_mae_low)
@@ -430,20 +428,20 @@ prophet_minmax_mae = mean_absolute_error(y_test_minmax['y'], prophet_minmax_fore
 prophet_minmax_rmse_low = mean_squared_error(y_test_minmax['low'], prophet_minmax_forecast_low['yhat'].tail(len(y_test_minmax)), squared=False)
 prophet_minmax_mae_low = mean_absolute_error(y_test_minmax['low'], prophet_minmax_forecast_low['yhat'].tail(len(y_test_minmax)))
 
-print("Prophet Model RMSE:", prophet_rmse)
-print("Prophet Model MAE:", prophet_mae)
+print("Prophet Model RMSE High:", prophet_rmse)
+print("Prophet Model MAE High:", prophet_mae)
 
 print("Prophet Model RMSE Low:", prophet_rmse_low)
 print("Prophet Model MAE Low:", prophet_mae_low)
 
-print("Prophet Standard Model RMSE:", prophet_standard_rmse)
-print("Prophet Standard Model MAE:", prophet_standard_mae)
+print("Prophet Standard Model RMSE High:", prophet_standard_rmse)
+print("Prophet Standard Model MAE High:", prophet_standard_mae)
 
 print("Prophet Standard Model RMSE Low:", prophet_standard_rmse_low)
 print("Prophet Standard Model MAE Low:", prophet_standard_mae_low)
 
-print("Prophet MinMax Model RMSE:", prophet_minmax_rmse)
-print("Prophet MinMax Model MAE:", prophet_minmax_mae)
+print("Prophet MinMax Model RMSE High:", prophet_minmax_rmse)
+print("Prophet MinMax Model MAE High:", prophet_minmax_mae)
 
 print("Prophet MinMax Model RMSE Low:", prophet_minmax_rmse_low)
 print("Prophet MinMax Model MAE Low:", prophet_minmax_mae_low)
@@ -451,36 +449,36 @@ print("Prophet MinMax Model MAE Low:", prophet_minmax_mae_low)
 # Plot actual vs. predicted values for ARIMA
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
-plt.plot(test_data.index, test_data['low'], label='Actual Low', color='purple')
-plt.plot(test_data.index, arima_forecast, label='ARIMA Predicted High', color='red')
-plt.plot(test_data.index, arima_forecast_low, label='ARIMA Predicted Low', color='green')
+plt.plot(test_data.index, test_data['low'], label='Actual Low', color='red')
+plt.plot(test_data.index, arima_forecast, label='ARIMA Predicted High', color='green')
+plt.plot(test_data.index, arima_forecast_low, label='ARIMA Predicted Low', color='purple')
 plt.title('Actual vs. ARIMA Predicted High-Low Prices')
 plt.xlabel('Date')
-plt.ylabel('High Price')
+plt.ylabel('Price')
 plt.legend()
 plt.show()
 
 # Plot actual vs. predicted values for Prophet
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
-plt.plot(test_data.index, prophet_forecast['yhat'], label='Prophet Predicted High', color='green')
-plt.title('Actual vs. Prophet Predicted High Prices')
+plt.plot(test_data.index, test_data['low'], label='Actual Low', color='red')
+plt.plot(test_data.index, prophet_forecast['yhat'].tail(len(y_test)), label='Prophet Predicted High', color='green')
+plt.plot(test_data.index, prophet_forecast_low['yhat'].tail(len(y_test)), label='Prophet Predicted Low', color='purple')
+plt.title('Actual vs. Prophet Predicted High-Low Prices')
 plt.xlabel('Date')
-plt.ylabel('High Price')
+plt.ylabel('Price')
 plt.legend()
 plt.show()
 
 # Plot actual vs. predicted values for LSTM
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
-plt.plot(test_data.index, test_data['low'], label='Actual Low', color='yellow')
-plt.plot(test_data.index, lstm_forecast[:,0], label='LSTM Predicted High', color='orange')
+plt.plot(test_data.index, test_data['low'], label='Actual Low', color='red')
+plt.plot(test_data.index, lstm_forecast[:,0], label='LSTM Predicted High', color='green')
 plt.plot(test_data.index, lstm_forecast[:,1], label='LSTM Predicted Low', color='purple')
 plt.title('Actual vs LSTM Predicted High-Low Prices')
 plt.xlabel('Date')
-plt.ylabel('High Price')
+plt.ylabel('Price')
 plt.legend()
 plt.show()
 
-print(test_data)
-print(train_data)
