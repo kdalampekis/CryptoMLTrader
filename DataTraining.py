@@ -105,8 +105,13 @@ def calculate_additional_features(df):
     df['close_std'] = df['close'].rolling(window=20).std()
 
     # Date-based features
-    df['day_of_week'] = df['ds'].dt.dayofweek
+    df['ds'] = pd.to_datetime(df['ds'])
+    df['year'] = df['ds'].dt.year
     df['month'] = df['ds'].dt.month
+    df['day'] = df['ds'].dt.day
+    df['day_of_week'] = df['ds'].dt.dayofweek
+    df['day_of_week_sin'] = np.sin(2 * np.pi * df['day_of_week'])
+    df['day_of_week_cos'] = np.cos(2 * np.pi * df['day_of_week'])
 
     df = seasonal_decomposition(df)
 
@@ -152,34 +157,27 @@ df_csv['date'] = df_csv['ds'].dt.date
 df_csv.drop(columns=['ds'], inplace=True)
 df_csv.rename(columns={'date': 'ds'}, inplace=True)
 df_csv['ds'] = pd.to_datetime(df_csv['ds'])
-df_csv['time_low'] = pd.to_datetime(df_csv['time_low'])
-df_csv['time_high'] = pd.to_datetime(df_csv['time_high'])
+df_csv['timeLow'] = pd.to_datetime(df_csv['timeLow'])
+df_csv['timeHigh'] = pd.to_datetime(df_csv['timeHigh'])
 
 # Extract relevant features
-df_csv['hour_low'] = df_csv['time_low'].dt.hour
-df_csv['minute_low'] = df_csv['time_low'].dt.minute
-df_csv['second_low'] = df_csv['time_low'].dt.second
+df_csv['hour_low'] = df_csv['timeLow'].dt.hour
+df_csv['minute_low'] = df_csv['timeLow'].dt.minute
+df_csv['second_low'] = df_csv['timeLow'].dt.second
 
-df_csv['hour_high'] = df_csv['time_high'].dt.hour
-df_csv['minute_high'] = df_csv['time_high'].dt.minute
-df_csv['second_high'] = df_csv['time_high'].dt.second
-df_csv.drop(columns=['time_low', 'time_high'], inplace=True)
+df_csv['hour_high'] = df_csv['timeHigh'].dt.hour
+df_csv['minute_high'] = df_csv['timeHigh'].dt.minute
+df_csv['second_high'] = df_csv['timeHigh'].dt.second
+df_csv.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 
-df_csv['ds'] = pd.to_datetime(df_csv['ds'])
 
 # Extract relevant features
-df_csv['year'] = df_csv['ds'].dt.year
-df_csv['month'] = df_csv['ds'].dt.month
-df_csv['day'] = df_csv['ds'].dt.day
-df_csv['day_of_week'] = df_csv['ds'].dt.dayofweek
-df_csv['day_of_week_sin'] = np.sin(2 * np.pi * df_csv['day_of_week'])
-df_csv['day_of_week_cos'] = np.cos(2 * np.pi * df_csv['day_of_week'])
-df_csv.drop(columns=['day_of_week', 'ds'], inplace=True)
+
 
 df_csv = calculate_technical_indicators(df_csv)
 df_csv = preprocess_data(df_csv)
-
 df_csv_sorted = df_csv.sort_values(by='ds', ascending=True)
+df_csv.drop(columns=['day_of_week'], inplace=True)
 df_csv_standard = df_csv_sorted.copy()
 df_csv_minmax = df_csv_sorted.copy()
 df_csv_help1 = df_csv_sorted.copy()
@@ -189,13 +187,13 @@ features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA
                      'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
                      'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
                      'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
-                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
+                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week_cos', 'day_of_week_sin', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
 
 features_to_scale1 = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
                      'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
                      'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
                      'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
-                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
+                     'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week_cos', 'day_of_week_sin', 'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
 
 # Initialize the scaler
 scaler = StandardScaler()
@@ -283,6 +281,13 @@ future_minmax = prophet_minmax_model.make_future_dataframe(periods=len(test_data
 prophet_minmax_forecast = prophet_minmax_model.predict(future_minmax)
 
 # 3. LSTM Model
+X_test.drop(columns=['ds'], inplace=True)
+X_train.drop(columns=['ds'], inplace=True)
+X_test_minmax.drop(columns=['ds'], inplace=True)
+X_train_minmax.drop(columns=['ds'], inplace=True)
+X_test_standard.drop(columns=['ds'], inplace=True)
+X_train_standard.drop(columns=['ds'], inplace=True)
+
 X_train_lstm = np.array(X_train).reshape((X_train.shape[0], 1, X_train.shape[1]))
 X_test_lstm = np.array(X_test).reshape((X_test.shape[0], 1, X_test.shape[1]))
 
@@ -333,14 +338,14 @@ print("ARIMA MinMax Model RMSE:", arima_minmax_rmse)
 print("ARIMA MinMax Model MAE:", arima_minmax_mae)
 
 # Evaluate LSTM model
-lstm_rmse = mean_squared_error(y_test['y'], lstm_forecast, squared=False)
-lstm_mae = mean_absolute_error(y_test['y'], lstm_forecast)
+lstm_rmse = mean_squared_error(y_test, lstm_forecast, squared=False)
+lstm_mae = mean_absolute_error(y_test, lstm_forecast)
 
-lstm_standard_rmse = mean_squared_error(y_test_standard['y'], lstm_standard_forecast, squared=False)
-lstm_standard_mae = mean_absolute_error(y_test_standard['y'], lstm_standard_forecast)
+lstm_standard_rmse = mean_squared_error(y_test_standard, lstm_standard_forecast, squared=False)
+lstm_standard_mae = mean_absolute_error(y_test_standard, lstm_standard_forecast)
 
-lstm_minmax_rmse = mean_squared_error(y_test_minmax['y'], lstm_minmax_forecast, squared=False)
-lstm_minmax_mae = mean_absolute_error(y_test_minmax['y'], lstm_minmax_forecast)
+lstm_minmax_rmse = mean_squared_error(y_test_minmax, lstm_minmax_forecast, squared=False)
+lstm_minmax_mae = mean_absolute_error(y_test_minmax, lstm_minmax_forecast)
 
 print("LSTM Model RMSE:", lstm_rmse)
 print("LSTM Model MAE:", lstm_mae)
@@ -379,7 +384,7 @@ plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
-
+'''
 # Plot actual vs. predicted values for Prophet
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
@@ -389,12 +394,14 @@ plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
-
+'''
 # Plot actual vs. predicted values for LSTM
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
+plt.plot(test_data.index, test_data['low'], label='Actual Low', color='yellow')
 plt.plot(test_data.index, lstm_forecast[:,0], label='LSTM Predicted High', color='orange')
-plt.title('Actual vs. LSTM Predicted High Prices')
+plt.plot(test_data.index, lstm_forecast[:,1], label='LSTM Predicted Low', color='purple')
+plt.title('Actual vs LSTM Predicted High-Low Prices')
 plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
