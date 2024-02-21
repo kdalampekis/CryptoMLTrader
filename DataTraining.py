@@ -251,18 +251,31 @@ X_test_minmax = test_data_minmax.drop(columns=["y", "low"])
 y_train_minmax = train_data_minmax[["y", "low"]]
 y_test_minmax = test_data_minmax[["y", "low"]]
 
+
 # 1. ARIMA Model
 arima_model = ARIMA(y_train['y'], order=(5, 1, 0))  # Example order, you may need to tune this
 arima_model_fit = arima_model.fit()
 arima_forecast = arima_model_fit.forecast(steps=len(test_data))
 
+arima_model_low = ARIMA(y_train['low'], order=(5, 1, 0))  # Example order, you may need to tune this
+arima_model_low_fit = arima_model.fit()
+arima_forecast_low = arima_model_low_fit.forecast(steps=len(test_data))
+
 arima_model_standard = ARIMA(y_train_standard['y'], order=(5, 1, 0))  # Example order, you may need to tune this
 arima_model_standard_fit = arima_model_standard.fit()
 arima_standard_forecast = arima_model_standard_fit.forecast(steps=len(test_data_standard))
 
+arima_model_standard_low = ARIMA(y_train_standard['low'], order=(5, 1, 0))  # Example order, you may need to tune this
+arima_model_standard_low_fit = arima_model_standard_low.fit()
+arima_standard_forecast_low = arima_model_standard_low_fit.forecast(steps=len(test_data_standard))
+
 arima_model_minmax = ARIMA(y_train_minmax['y'], order=(5, 1, 0))  # Example order, you may need to tune this
 arima_model_minmax_fit = arima_model_minmax.fit()
 arima_minmax_forecast = arima_model_minmax_fit.forecast(steps=len(test_data_minmax))
+
+arima_model_minmax_low = ARIMA(y_train_minmax['low'], order=(5, 1, 0))  # Example order, you may need to tune this
+arima_model_minmax_low_fit = arima_model_minmax_low.fit()
+arima_minmax_forecast_low = arima_model_minmax_low_fit.forecast(steps=len(test_data_minmax))
 
 # 2. Prophet Model
 prophet_model = Prophet()
@@ -270,15 +283,39 @@ prophet_model.fit(train_data[['ds', 'y']])
 future = prophet_model.make_future_dataframe(periods=len(test_data), freq='D')
 prophet_forecast = prophet_model.predict(future)
 
+prophet_model_low = Prophet()
+train_data_low = train_data.copy()
+train_data_low.drop(columns=['y'], inplace=True)
+train_data_low = train_data_low.rename(columns={'low': 'y'})
+prophet_model_low.fit(train_data_low[['ds', 'y']])
+future_low = prophet_model_low.make_future_dataframe(periods=len(test_data), freq='D')
+prophet_forecast_low = prophet_model_low.predict(future_low)
+
 prophet_standard_model = Prophet()
 prophet_standard_model.fit(train_data_standard[['ds', 'y']])
 future_standard = prophet_standard_model.make_future_dataframe(periods=len(test_data_standard), freq='D')
 prophet_standard_forecast = prophet_standard_model.predict(future_standard)
 
+prophet_standard_model_low = Prophet()
+train_data_standard_low = train_data_standard.copy()
+train_data_standard_low.drop(columns=['y'], inplace=True)
+train_data_standard_low = train_data_standard_low.rename(columns={'low': 'y'})
+prophet_standard_model_low.fit(train_data_standard_low[['ds', 'y']])
+future_standard_low = prophet_standard_model_low.make_future_dataframe(periods=len(test_data_standard), freq='D')
+prophet_standard_forecast_low = prophet_standard_model_low.predict(future_standard_low)
+
 prophet_minmax_model = Prophet()
 prophet_minmax_model.fit(train_data_minmax[['ds', 'y']])
 future_minmax = prophet_minmax_model.make_future_dataframe(periods=len(test_data_minmax), freq='D')
 prophet_minmax_forecast = prophet_minmax_model.predict(future_minmax)
+
+prophet_minmax_model_low = Prophet()
+train_data_minmax_low = train_data_minmax.copy()
+train_data_minmax_low.drop(columns=['y'], inplace=True)
+train_data_minmax_low = train_data_minmax_low.rename(columns={'low': 'y'})
+prophet_minmax_model_low.fit(train_data_minmax_low[['ds', 'y']])
+future_minmax_low = prophet_minmax_model_low.make_future_dataframe(periods=len(test_data_minmax), freq='D')
+prophet_minmax_forecast_low = prophet_minmax_model_low.predict(future_minmax_low)
 
 # 3. LSTM Model
 X_test.drop(columns=['ds'], inplace=True)
@@ -322,20 +359,38 @@ lstm_minmax_forecast = lstm_minmax_model.predict(X_test_minmax_lstm)
 arima_rmse = mean_squared_error(y_test['y'], arima_forecast, squared=False)
 arima_mae = mean_absolute_error(y_test['y'], arima_forecast)
 
+arima_rmse_low = mean_squared_error(y_test['low'], arima_forecast_low, squared=False)
+arima_mae_low = mean_absolute_error(y_test['low'], arima_forecast_low)
+
 arima_standard_rmse = mean_squared_error(y_test_standard['y'], arima_standard_forecast, squared=False)
 arima_standard_mae = mean_absolute_error(y_test_standard['y'], arima_standard_forecast)
+
+arima_standard_rmse_low = mean_squared_error(y_test_standard['low'], arima_standard_forecast_low, squared=False)
+arima_standard_mae_low = mean_absolute_error(y_test_standard['low'], arima_standard_forecast_low)
 
 arima_minmax_rmse = mean_squared_error(y_test_minmax['y'], arima_minmax_forecast, squared=False)
 arima_minmax_mae = mean_absolute_error(y_test_minmax['y'], arima_minmax_forecast)
 
+arima_minmax_rmse_low = mean_squared_error(y_test_minmax['low'], arima_minmax_forecast_low, squared=False)
+arima_minmax_mae_low = mean_absolute_error(y_test_minmax['low'], arima_minmax_forecast_low)
+
 print("ARIMA Model RMSE:", arima_rmse)
 print("ARIMA Model MAE:", arima_mae)
+
+print("ARIMA Model RMSE Low:", arima_rmse_low)
+print("ARIMA Model MAE Low:", arima_mae_low)
 
 print("ARIMA Standard Model RMSE:", arima_standard_rmse)
 print("ARIMA Standard Model MAE:", arima_standard_mae)
 
+print("ARIMA Standard Model RMSE Low:", arima_standard_rmse_low)
+print("ARIMA Standard Model MAE Low:", arima_standard_mae_low)
+
 print("ARIMA MinMax Model RMSE:", arima_minmax_rmse)
 print("ARIMA MinMax Model MAE:", arima_minmax_mae)
+
+print("ARIMA MinMax Model RMSE Low:", arima_minmax_rmse_low)
+print("ARIMA MinMax Model MAE Low:", arima_minmax_mae_low)
 
 # Evaluate LSTM model
 lstm_rmse = mean_squared_error(y_test, lstm_forecast, squared=False)
@@ -360,31 +415,51 @@ print("LSTM MinMax Model MAE:", lstm_minmax_mae)
 prophet_rmse = mean_squared_error(y_test['y'], prophet_forecast['yhat'].tail(len(y_test)), squared=False)
 prophet_mae = mean_absolute_error(y_test['y'], prophet_forecast['yhat'].tail(len(y_test)))
 
+prophet_rmse_low = mean_squared_error(y_test['low'], prophet_forecast_low['yhat'].tail(len(y_test)), squared=False)
+prophet_mae_low = mean_absolute_error(y_test['low'], prophet_forecast_low['yhat'].tail(len(y_test)))
+
 prophet_standard_rmse = mean_squared_error(y_test_standard['y'], prophet_standard_forecast['yhat'].tail(len(y_test_standard)), squared=False)
 prophet_standard_mae = mean_absolute_error(y_test_standard['y'], prophet_standard_forecast['yhat'].tail(len(y_test_standard)))
+
+prophet_standard_rmse_low = mean_squared_error(y_test_standard['low'], prophet_standard_forecast_low['yhat'].tail(len(y_test_standard)), squared=False)
+prophet_standard_mae_low = mean_absolute_error(y_test_standard['low'], prophet_standard_forecast_low['yhat'].tail(len(y_test_standard)))
 
 prophet_minmax_rmse = mean_squared_error(y_test_minmax['y'], prophet_minmax_forecast['yhat'].tail(len(y_test_minmax)), squared=False)
 prophet_minmax_mae = mean_absolute_error(y_test_minmax['y'], prophet_minmax_forecast['yhat'].tail(len(y_test_minmax)))
 
+prophet_minmax_rmse_low = mean_squared_error(y_test_minmax['low'], prophet_minmax_forecast_low['yhat'].tail(len(y_test_minmax)), squared=False)
+prophet_minmax_mae_low = mean_absolute_error(y_test_minmax['low'], prophet_minmax_forecast_low['yhat'].tail(len(y_test_minmax)))
+
 print("Prophet Model RMSE:", prophet_rmse)
 print("Prophet Model MAE:", prophet_mae)
+
+print("Prophet Model RMSE Low:", prophet_rmse_low)
+print("Prophet Model MAE Low:", prophet_mae_low)
 
 print("Prophet Standard Model RMSE:", prophet_standard_rmse)
 print("Prophet Standard Model MAE:", prophet_standard_mae)
 
+print("Prophet Standard Model RMSE Low:", prophet_standard_rmse_low)
+print("Prophet Standard Model MAE Low:", prophet_standard_mae_low)
+
 print("Prophet MinMax Model RMSE:", prophet_minmax_rmse)
 print("Prophet MinMax Model MAE:", prophet_minmax_mae)
+
+print("Prophet MinMax Model RMSE Low:", prophet_minmax_rmse_low)
+print("Prophet MinMax Model MAE Low:", prophet_minmax_mae_low)
 
 # Plot actual vs. predicted values for ARIMA
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
+plt.plot(test_data.index, test_data['low'], label='Actual Low', color='purple')
 plt.plot(test_data.index, arima_forecast, label='ARIMA Predicted High', color='red')
-plt.title('Actual vs. ARIMA Predicted High Prices')
+plt.plot(test_data.index, arima_forecast_low, label='ARIMA Predicted Low', color='green')
+plt.title('Actual vs. ARIMA Predicted High-Low Prices')
 plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
-'''
+
 # Plot actual vs. predicted values for Prophet
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
@@ -394,7 +469,7 @@ plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
-'''
+
 # Plot actual vs. predicted values for LSTM
 plt.figure(figsize=(14, 7))
 plt.plot(test_data.index, test_data['y'], label='Actual High', color='blue')
@@ -407,3 +482,5 @@ plt.ylabel('High Price')
 plt.legend()
 plt.show()
 
+print(test_data)
+print(train_data)
