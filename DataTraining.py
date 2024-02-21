@@ -156,9 +156,10 @@ df_csv = calculate_technical_indicators(df_csv)
 df_csv = preprocess_data(df_csv)
 
 df_csv_sorted = df_csv.sort_values(by='ds', ascending=True)
-df_csv_standard = df_csv_sorted
-df_csv_minmax = df_csv_sorted
-
+df_csv_standard = df_csv_sorted.copy()
+df_csv_minmax = df_csv_sorted.copy()
+df_csv_help1 = df_csv_sorted.copy()
+df_csv_help2 = df_csv_sorted.copy()
 
 features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
                      'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
@@ -166,14 +167,20 @@ features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA
                      'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
                      'close_std', 'close_detrended']
 
+features_to_scale1 = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
+                     'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
+                     'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
+                     'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
+                     'close_std', 'close_detrended']
+
 # Initialize the scaler
 scaler = StandardScaler()
-
 # Scale the selected features
-df_csv_standard[features_to_scale] = scaler.fit_transform(df_csv[features_to_scale])
+df_csv_standard[features_to_scale] = scaler.fit_transform(df_csv_help1[features_to_scale1])
+
 # Initialize the scaler
 minmax_scaler = MinMaxScaler()
-df_csv_minmax[features_to_scale] = minmax_scaler.fit_transform(df_csv[features_to_scale])
+df_csv_minmax[features_to_scale] = minmax_scaler.fit_transform(df_csv_help2[features_to_scale])
 
 # Determine the index for splitting the data (e.g., 80% training, 20% testing)
 split_index = int(0.8 * len(df_csv_sorted))
@@ -196,7 +203,6 @@ print("Testing data shape:", test_data.shape)
 print("Training standard data shape:", train_data_standard.shape)
 print("Testing standard data shape:", test_data_standard.shape)
 print("Training minmax data shape:", train_data_minmax.shape)
-print("Testing minmax data shape:", test_data_minmax.shape)
 
 
 # Features (X) are all columns except "high" and "low"
@@ -223,6 +229,7 @@ X_test_minmax = test_data_minmax.drop(columns=["y", "low"])
 y_train_minmax = train_data_minmax[["y", "low"]]
 y_test_minmax = test_data_minmax[["y", "low"]]
 
+'''
 # 1. ARIMA Model
 arima_model = ARIMA(y_train['y'], order=(5, 1, 0))  # Example order, you may need to tune this
 arima_model_fit = arima_model.fit()
@@ -369,3 +376,4 @@ plt.xlabel('Date')
 plt.ylabel('High Price')
 plt.legend()
 plt.show()
+'''
