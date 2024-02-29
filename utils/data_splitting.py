@@ -1,12 +1,12 @@
 import pandas as pd
 
 
-df_csv_sorted = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/processed_data.csv')
-df_csv_standard = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard.csv')
-df_csv_minmax = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax.csv')
-df_csv_sorted_filtered = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_sorted_filtered.csv')
-df_csv_standard_filtered = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard_filtered.csv')
-df_csv_minmax_filtered = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax_filtered.csv')
+df_csv_sorted = pd.read_csv('../Data/processed_data.csv')
+df_csv_standard = pd.read_csv('../Data/df_csv_standard.csv')
+df_csv_minmax = pd.read_csv('../Data/df_csv_minmax.csv')
+df_csv_sorted_filtered = pd.read_csv('../Data/df_csv_sorted_filtered.csv')
+df_csv_standard_filtered = pd.read_csv('../Data/df_csv_standard_filtered.csv')
+df_csv_minmax_filtered = pd.read_csv('../Data/df_csv_minmax_filtered.csv')
 
 # Calculate indices for splitting the data into training (80%), validation (10%), and testing (10%)
 train_index = int(0.8 * len(df_csv_sorted))
