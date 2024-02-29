@@ -3,8 +3,26 @@ from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 
-df_csv_sorted = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/processed_data.csv')
 
+# Define a function to perform feature selection and filter the dataset
+def filter_top_features(df, target='y', n_features=25):
+    X = df.drop(['y', 'low'], axis=1)
+    y = df[target]
+
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
+
+    # Get feature importances and select top features
+    feature_importances = pd.DataFrame(model.feature_importances_, index=X.columns, columns=['importance']).sort_values(
+        'importance', ascending=False)
+    top_features = feature_importances.head(n_features).index.tolist()
+
+    # Include the target variables in the features to keep
+    features_to_keep = top_features + ['y', 'low']
+    return df[features_to_keep]
+
+
+df_csv_sorted = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/processed_data.csv')
 df_csv_standard = df_csv_sorted.copy()
 df_csv_minmax = df_csv_sorted.copy()
 df_csv_help1 = df_csv_sorted.copy()
@@ -26,10 +44,27 @@ features_to_scale1 = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SM
 scaler = StandardScaler()
 # Scale the selected features
 df_csv_standard[features_to_scale] = scaler.fit_transform(df_csv_help1[features_to_scale1])
+df_csv_standard.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard.csv', index=False)
 
 # Initialize the scaler
 minmax_scaler = MinMaxScaler()
 df_csv_minmax[features_to_scale] = minmax_scaler.fit_transform(df_csv_help2[features_to_scale])
+df_csv_minmax.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax.csv', index=False)
+
+df_csv_sorted_filtered = df_csv_sorted.copy()
+df_csv_standard_filtered = df_csv_standard.copy()
+df_csv_minmax_filtered = df_csv_minmax.copy()
+
+# Apply the function to each dataset
+df_csv_sorted_filtered = filter_top_features(df_csv_sorted_filtered)
+df_csv_standard_filtered = filter_top_features(df_csv_standard_filtered)
+df_csv_minmax_filtered = filter_top_features(df_csv_minmax_filtered)
+
+# Save the filtered datasets
+df_csv_sorted_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_sorted_filtered.csv', index=False)
+df_csv_standard_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard_filtered.csv', index=False)
+df_csv_minmax_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax_filtered.csv', index=False)
+
 
 # Calculate indices for splitting the data into training (80%), validation (10%), and testing (10%)
 train_index = int(0.8 * len(df_csv_sorted))
@@ -59,53 +94,6 @@ X_test = test_data.drop(columns=["y", "low"])
 y_train = train_data[["y", "low"]]
 y_val = val_data[["y", "low"]]
 y_test = test_data[["y", "low"]]
-
-# For the standard scaled dataset
-X_train_standard = train_data_standard.drop(columns=["y", "low"])
-X_val_standard = val_data_standard.drop(columns=["y", "low"])
-X_test_standard = test_data_standard.drop(columns=["y", "low"])
-
-y_train_standard = train_data_standard[["y", "low"]]
-y_val_standard = val_data_standard[["y", "low"]]
-y_test_standard = test_data_standard[["y", "low"]]
-
-# For the min-max scaled dataset
-X_train_minmax = train_data_minmax.drop(columns=["y", "low"])
-X_val_minmax = val_data_minmax.drop(columns=["y", "low"])
-X_test_minmax = test_data_minmax.drop(columns=["y", "low"])
-
-y_train_minmax = train_data_minmax[["y", "low"]]
-y_val_minmax = val_data_minmax[["y", "low"]]
-y_test_minmax = test_data_minmax[["y", "low"]]
-
-# High and low targets for training, validation, and testing (Original dataset)
-y_train_high = train_data[['y']]
-y_val_high = val_data[['y']]
-y_test_high = test_data[['y']]
-
-y_train_low = train_data[['low']]
-y_val_low = val_data[['low']]
-y_test_low = test_data[['low']]
-
-# High price as the target variable
-y_train_minmax_high = train_data_minmax[['y']]  # For training
-y_val_minmax_high = val_data_minmax[['y']]
-y_test_minmax_high = test_data_minmax[['y']]    # For testing
-
-# Low price as the target variable
-y_train_minmax_low = train_data_minmax[['low']]  # For training
-y_val_minmax_low = val_data_minmax[['low']]
-y_test_minmax_low = test_data_minmax[['low']]    # For testing
-
-# High price as the target variable
-y_train_standard_high = train_data_standard[['y']]  # For training
-y_val_standard_high = val_data_standard[['y']]
-y_test_standard_high = test_data_standard[['y']]    # For testing
-
-# Low price as the target variable
-y_train_standard_low = train_data_standard[['low']]  # For training
-y_val_standard_low = val_data_standard[['low']]
-y_test_standard_low = test_data_standard[['low']]    # For testing
 
 
 def perform_feature_selection(X_train, y_train, X_columns):
@@ -186,9 +174,3 @@ selected_features_df = select_k_best_features(X_train, y_train_for_selectkbest, 
 # Print or save the selected features from SelectKBest
 print("Selected features by SelectKBest:")
 print(selected_features_df)
-
-# Optionally, you might want to save this to a CSV file
-# selected_features_df.to_csv('selected_features_selectkbest.csv', index=False)
-
-# Assuming perform_feature_selection function is already defined for RandomForestRegressor
-# and has been run, as shown in the previous example
