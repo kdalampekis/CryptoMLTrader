@@ -7,7 +7,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 # Replace 'YOUR_API_KEY' with your actual API key from CryptoCompare
-api_key = 'https://min-api.cryptocompare.com/data/v2/histoday'
+api_key = '5e634ddb33c885608fd2ae22be8b4e2af36c5675fad653eae97ad8a2c8811864'
 
 # Base URL for the CryptoCompare API
 base_url = 'https://min-api.cryptocompare.com/data/v2/histoday'
