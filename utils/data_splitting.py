@@ -160,3 +160,5 @@ y_test_standard_high_filtered = test_data_standard_filtered[['y']]    # For test
 y_train_standard_low_filtered = train_data_standard_filtered[['low']]  # For training
 y_val_standard_low_filtered = val_data_standard_filtered[['low']]
 y_test_standard_low_filtered = test_data_standard_filtered[['low']]    # For testing
+
+print("Data splitted correctly")
