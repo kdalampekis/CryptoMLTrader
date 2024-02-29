@@ -1,20 +1,26 @@
 import pandas as pd
 import numpy as np
-from ..utils import data_splitting
-from fbprophet import Prophet
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils import data_splitting
+from prophet import Prophet
 from sklearn.metrics import mean_squared_error
-
 
 # Assuming datasets are loaded as follows:
 datasets = {
     "original": (data_splitting.train_data, data_splitting.val_data, data_splitting.test_data),
-    "standard_scaled": (data_splitting.train_data_standard, data_splitting.val_data_standard, data_splitting.test_data_standard),
-    "minmax_scaled": (data_splitting.train_data_minmax, data_splitting.val_data_minmax, data_splitting.test_data_minmax),
-    "filtered": (data_splitting.train_data_filtered, data_splitting.val_data_filtered, data_splitting.test_data_filtered),
-    "standard_scaled_filtered": (data_splitting.train_data_standard_filtered, data_splitting.val_data_standard_filtered, data_splitting.test_data_standard_filtered),
-    "minmax_scaled_filtered": (data_splitting.train_data_minmax_filtered, data_splitting.val_data_minmax_filtered, data_splitting.test_data_minmax_filtered)
+    "standard_scaled": (
+        data_splitting.train_data_standard, data_splitting.val_data_standard, data_splitting.test_data_standard),
+    "minmax_scaled": (
+        data_splitting.train_data_minmax, data_splitting.val_data_minmax, data_splitting.test_data_minmax),
+    "filtered": (
+        data_splitting.train_data_filtered, data_splitting.val_data_filtered, data_splitting.test_data_filtered),
+    "standard_scaled_filtered": (data_splitting.train_data_standard_filtered, data_splitting.val_data_standard_filtered,
+                                 data_splitting.test_data_standard_filtered),
+    "minmax_scaled_filtered": (data_splitting.train_data_minmax_filtered, data_splitting.val_data_minmax_filtered,
+                               data_splitting.test_data_minmax_filtered)
 }
-
 
 # Initialize dictionaries to store RMSE for each dataset variant for both targets
 rmse_scores_high = {}
@@ -65,4 +71,3 @@ best_dataset_low = min(rmse_scores_low, key=rmse_scores_low.get)
 
 print(f"Best dataset variant for High: {best_dataset_high} with RMSE = {rmse_scores_high[best_dataset_high]}")
 print(f"Best dataset variant for Low: {best_dataset_low} with RMSE = {rmse_scores_low[best_dataset_low]}")
-

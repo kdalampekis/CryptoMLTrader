@@ -18,7 +18,7 @@ def filter_top_features(df, target='y', n_features=25):
     top_features = feature_importances.head(n_features).index.tolist()
 
     # Include the target variables in the features to keep/
-    features_to_keep = top_features + ['y', 'low']
+    features_to_keep = top_features + ['y', 'low', 'ds']
     return df[features_to_keep]
 
 
@@ -131,8 +131,8 @@ y_train_for_feature_selection = y_train['y'] if 'y' in y_train else y_train.iloc
 
 # Perform feature selection
 X_train1 = X_train.copy()
-X_train1.drop(['ds'], axis=1)
-feature_importances_df = perform_feature_selection(X_train1, y_train_for_feature_selection, X_train.columns)
+X_train1 = X_train1.drop(['ds'], axis=1)
+feature_importances_df = perform_feature_selection(X_train1, y_train_for_feature_selection, X_train1.columns)
 
 # Print or save the feature importances
 print(feature_importances_df)
@@ -171,7 +171,7 @@ def select_k_best_features(X_train, y_train, X_columns, k=20):
 y_train_for_selectkbest = y_train['y'] if 'y' in y_train else y_train.iloc[:, 0]
 
 # Perform feature selection with SelectKBest
-selected_features_df = select_k_best_features(X_train1, y_train_for_selectkbest, X_train.columns, k=20)
+selected_features_df = select_k_best_features(X_train1, y_train_for_selectkbest, X_train1.columns, k=20)
 
 # Print or save the selected features from SelectKBest
 print("Selected features by SelectKBest:")
