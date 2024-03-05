@@ -2,7 +2,7 @@ import sys
 import os
 from sklearn.metrics import mean_squared_error
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Conv1D, Flatten, MaxPooling1D
+from tensorflow.python.keras.layers import Dense, Conv1D, Flatten
 from tensorflow.python.keras.callbacks import EarlyStopping
 from math import sqrt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
