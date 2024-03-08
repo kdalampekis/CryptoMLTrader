@@ -22,7 +22,7 @@ def filter_top_features(df, target='y', n_features=25):
     return df[features_to_keep]
 
 
-df_csv_sorted = pd.read_csv('/Users/kostasbekis/CryptoMLTrader/Data/processed_data.csv')
+df_csv_sorted = pd.read_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/processed_data.csv')
 df_csv_standard = df_csv_sorted.copy()
 df_csv_minmax = df_csv_sorted.copy()
 df_csv_help1 = df_csv_sorted.copy()
@@ -44,12 +44,12 @@ features_to_scale1 = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SM
 scaler = StandardScaler()
 # Scale the selected features
 df_csv_standard[features_to_scale] = scaler.fit_transform(df_csv_help1[features_to_scale1])
-df_csv_standard.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard.csv', index=False)
+df_csv_standard.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/df_csv_standard.csv', index=False)
 
 # Initialize the scaler
 minmax_scaler = MinMaxScaler()
 df_csv_minmax[features_to_scale] = minmax_scaler.fit_transform(df_csv_help2[features_to_scale])
-df_csv_minmax.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax.csv', index=False)
+df_csv_minmax.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/df_csv_minmax.csv', index=False)
 
 df_csv_sorted_filtered = df_csv_sorted.copy()
 df_csv_standard_filtered = df_csv_standard.copy()
@@ -61,9 +61,9 @@ df_csv_standard_filtered = filter_top_features(df_csv_standard_filtered)
 df_csv_minmax_filtered = filter_top_features(df_csv_minmax_filtered)
 
 # Save the filtered datasets
-df_csv_sorted_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_sorted_filtered.csv', index=False)
-df_csv_standard_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_standard_filtered.csv', index=False)
-df_csv_minmax_filtered.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/df_csv_minmax_filtered.csv', index=False)
+df_csv_sorted_filtered.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/df_csv_sorted_filtered.csv', index=False)
+df_csv_standard_filtered.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/df_csv_standard_filtered.csv', index=False)
+df_csv_minmax_filtered.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/df_csv_minmax_filtered.csv', index=False)
 
 
 # Calculate indices for splitting the data into training (80%), validation (10%), and testing (10%)

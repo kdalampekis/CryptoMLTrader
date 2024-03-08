@@ -133,7 +133,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 # Load historical data from the CSV file
-csv_file_path = '/Users/kostasbekis/CryptoMLTrader/Data/Solana_20_2_2023-20_2_2024_historical_data_coinmarketcap.csv'
+csv_file_path = '/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/Solana_14_2_2021-13_4_2021_historical_data_coinmarketcap.csv'
 df_csv = pd.read_csv(csv_file_path, delimiter=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow'])
 df_csv.rename(columns={
         'timestamp': 'ds',
@@ -169,4 +169,4 @@ df_csv = calculate_technical_indicators(df_csv)
 df_csv = preprocess_data(df_csv)
 df_csv_sorted = df_csv.sort_values(by='ds', ascending=True)
 df_csv_sorted.drop(columns=['day_of_week'], inplace=True)
-df_csv_sorted.to_csv('/Users/kostasbekis/CryptoMLTrader/Data/processed_data.csv', index=False)
+df_csv_sorted.to_csv('/Users/kostasbekis/PyCharmProjects/CryptoMLTrader/Data/processed_data.csv', index=False)
