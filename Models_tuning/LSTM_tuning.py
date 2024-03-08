@@ -59,5 +59,17 @@ def main():
     print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 
 
+# Retrain the best model
+    best_params = grid_result.best_params_
+    best_model = build_model(**best_params)
+    best_model.fit(X_train, y_train, epochs=best_params['epochs'], batch_size=best_params['batch_size'], verbose=0)
+
+    # Save the best model
+    model_save_path = '../Trained_Models/best_lstm_model.h5'  # Update the path
+    best_model.save(model_save_path)
+
+    print(f"Model saved to {model_save_path}")
+
+
 if __name__ == '__main__':
     main()

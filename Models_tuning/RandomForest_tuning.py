@@ -2,10 +2,12 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 import numpy as np
+import pickle
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import data_splitting
+
 
 def main():
     # Load the minmax_scaled_filtered dataset
@@ -38,6 +40,16 @@ def main():
     # Print the best parameters found
     print("Best parameters found: ", grid_search.best_params_)
 
+    # Retrieve the best model
+    best_rf = grid_search.best_estimator_
+
+    # Save the best model
+    model_save_path = '../Trained_Models/best_rf_model.pkl'
+    with open(model_save_path, 'wb') as pkl:
+        pickle.dump(best_rf, pkl)
+
+    print(f"Model saved to {model_save_path}")
+
     # Evaluate on the validation set
     best_rf = grid_search.best_estimator_
     val_predictions = best_rf.predict(X_val)
@@ -48,5 +60,7 @@ def main():
     test_predictions = best_rf.predict(X_test)
     test_rmse = np.sqrt(mean_squared_error(y_test, test_predictions, multioutput='raw_values'))
     print(f"Test RMSE: {test_rmse}")
+
+
 if __name__ == '__main__':
     main()

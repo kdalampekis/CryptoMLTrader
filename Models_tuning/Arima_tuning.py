@@ -5,6 +5,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import data_splitting
+import pickle
+
 
 # Assuming 'y' is the target variable
 
@@ -48,15 +50,24 @@ def main():
     q_values = range(0, 3)
 
     # Grid search
+    # Grid search
     best_cfg, best_score = grid_search_arima(train_data, val_data, p_values, d_values, q_values)
     print('Best ARIMA%s RMSE=%.3f' % (best_cfg, best_score))
 
+    # Train the best model on the combined train and validation data
+    model_fit = ARIMA(train_data.append(val_data), order=best_cfg).fit()
+
     # Evaluate on the test set
-    model = ARIMA(train_data, order=best_cfg)
-    model_fit = model.fit()
     predictions = model_fit.forecast(steps=len(test_data))
     test_rmse = sqrt(mean_squared_error(test_data, predictions))
     print('Test RMSE: %.3f' % test_rmse)
+
+    # Save the best model
+    model_save_path = os.path.join('../Trained_Models', 'best_arima_model.pkl')
+    with open(model_save_path, 'wb') as pkl:
+        pickle.dump(model_fit, pkl)
+
+    print(f"Model saved to {model_save_path}")
 
 
 if __name__ == '__main__':

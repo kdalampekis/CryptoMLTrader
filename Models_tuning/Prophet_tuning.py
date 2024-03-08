@@ -2,6 +2,7 @@ from prophet import Prophet
 from prophet.diagnostics import cross_validation, performance_metrics
 from sklearn.model_selection import ParameterGrid
 import pandas as pd
+import pickle
 
 
 def train_and_evaluate_prophet(df, target_column):
@@ -49,7 +50,19 @@ def train_and_evaluate_prophet(df, target_column):
 
     # Identify and return the best parameters based on RMSE
     best_params = sorted(results, key=lambda x: x['rmse'])[0]
-    return best_params
+
+    # Retrain the best model
+    best_model = Prophet(
+        changepoint_prior_scale=best_params['changepoint_prior_scale'],
+        seasonality_prior_scale=best_params['seasonality_prior_scale'],
+        holidays_prior_scale=best_params['holidays_prior_scale'],
+        seasonality_mode=best_params['seasonality_mode'],
+        n_changepoints=best_params['n_changepoints']
+    )
+    df_prophet = df[['ds', target_column]].rename(columns={target_column: 'y'})
+    best_model.fit(df_prophet)
+
+    return best_model, best_params
 
 
 def main():
@@ -58,12 +71,19 @@ def main():
     df_prophet['ds'] = pd.to_datetime(df_prophet['ds'])
 
     # Train and evaluate for 'high' target
-    best_params_high = train_and_evaluate_prophet(df_prophet, 'y')
+    best_model_high, best_params_high = train_and_evaluate_prophet(df_prophet, 'y')
     print("Best Parameters for High:", best_params_high)
 
+    # Save the best model for 'high' target
+    with open('../Trained_Models/best_prophet_high.pkl', 'wb') as pkl:
+        pickle.dump(best_model_high, pkl)
+
     # Train and evaluate for 'low' target
-    best_params_low = train_and_evaluate_prophet(df_prophet, 'low')
+    best_model_low, best_params_low = train_and_evaluate_prophet(df_prophet, 'low')
     print("Best Parameters for Low:", best_params_low)
+
+    with open('../Trained_Models/best_prophet_low.pkl', 'wb') as pkl:
+        pickle.dump(best_model_low, pkl)
 
 
 if __name__ == '__main__':

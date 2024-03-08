@@ -73,5 +73,22 @@ def main():
     print(f"Best Parameters: {best_params}")
 
 
+# Retrain model with best parameters on the full dataset
+    best_model = create_cnn_model((1, num_features),
+                                  best_params['filters'],
+                                  best_params['kernel_size'],
+                                  best_params['dense_units'],
+                                  2)  # Assuming 2 output units
+
+    early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+    best_model.fit(X, y, epochs=100, batch_size=32, callbacks=[early_stopping], verbose=0)
+
+    # Save the best model
+    model_save_path = os.path.join('../Trained_Models', 'best_cnn_model.h5')
+    best_model.save(model_save_path)
+
+    print(f"Model saved to {model_save_path}")
+
+
 if __name__ == '__main__':
     main()

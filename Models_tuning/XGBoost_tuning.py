@@ -2,6 +2,7 @@ import xgboost as xgb
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
 from math import sqrt
+import pickle
 import sys
 import os
 
@@ -67,6 +68,14 @@ def main():
 
     best_params = grid_search.best_params_
     print("Best hyperparameters:", best_params)
+
+    # Saving the best XGBoost model
+    best_model = grid_search.best_estimator_
+    model_save_path = os.path.join('../Trained_Models', 'best_xgb_model.pkl')
+    with open(model_save_path, 'wb') as pkl:
+        pickle.dump(best_model, pkl)
+
+    print(f"Model saved to {model_save_path}")
 
     X_test, y_test = prepare_data(datasets[best_dataset][2], 'y')  # Adjust index as per datasets structure
     best_model = grid_search.best_estimator_
