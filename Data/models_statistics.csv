@@ -6,4 +6,4 @@ best_arima_model,0.184,"1, 0, 0"
 best_cnn_model,0.05923182559666943,"'filters': 32, 'kernel_size': 1, 'dense_units': 100"
 best_prophet_high,0.06355036587241046,"'changepoint_prior_scale': 0.5, 'holidays_prior_scale': 0.1, 'n_changepoints': 20, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 0.1"
 best_prophet_low,0.050388878591176724,"'changepoint_prior_scale': 0.5, 'holidays_prior_scale': 0.1, 'n_changepoints': 20, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 0.1"
-best_lstm_model,,
+best_lstm_model,0.000594,"'activation': 'relu', 'batch_size': 32, 'dropout_rate': 0.2, 'epochs': 100, 'learning_rate': 0.01, 'lstm_units': 100, 'num_layers': 1, 'optimizer': 'adam', 'regularizer_l1': 0.0, 'regularizer_l2': 0.01"
