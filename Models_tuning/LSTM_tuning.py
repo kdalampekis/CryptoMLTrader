@@ -32,20 +32,20 @@ def build_model(lstm_units=50, num_layers=1, optimizer='adam', learning_rate=0.0
 def main():
 
     # Wrap the model with KerasRegressor
-    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=3)
+    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=1)
 
     # Define the parameter grid to search
     param_grid = {
-        'lstm_units': [30, 50, 100],  # Number of neurons in LSTM layer
+        'lstm_units': [50, 100],  # Number of neurons in LSTM layer
         'num_layers': [1, 2, 3],      # Number of LSTM layers
         'optimizer': ['adam'],   # previous "sgd"
         'learning_rate': [0.001, 0.01, 0.1],  # Learning rate
         'dropout_rate': [0.0, 0.2, 0.5],  # Dropout for regularization
         'batch_size': [32, 64],   # Size of each batch before  had also 16
         'epochs': [100],          # Number of epochs previous 50
-        'activation': ['relu', 'tanh'],  # Activation function
-        'regularizer_l1': [0.0],  # L1 regularization previous 0.01
-        'regularizer_l2': [0.0],  # L2 regularization previous 0.01
+        'activation': ['relu'],  # Activation function
+        'regularizer_l1': [0.0, 0.01],  # L1 regularization previous 0.01
+        'regularizer_l2': [0.0, 0.01],  # L2 regularization previous 0.01
     }
 
     # Use TimeSeriesSplit for cross-validation
@@ -61,9 +61,17 @@ def main():
 
 # Retrain the best model
     best_params = grid_result.best_params_
-    best_model = build_model(**best_params)
-    best_model.fit(X_train, y_train, epochs=best_params['epochs'], batch_size=best_params['batch_size'], verbose=0)
+    best_model = build_model(lstm_units=best_params['lstm_units'],
+                             num_layers=best_params['num_layers'],
+                             optimizer=best_params['optimizer'],
+                             learning_rate=best_params['learning_rate'],
+                             dropout_rate=best_params['dropout_rate'],
+                             activation=best_params['activation'],
+                             regularizer_l1=best_params['regularizer_l1'],
+                             regularizer_l2=best_params['regularizer_l2'])
 
+    # Fit the best model with the appropriate batch size
+    best_model.fit(X_train, y_train, epochs=best_params['epochs'], batch_size=best_params['batch_size'], verbose=0)
     # Save the best model
     model_save_path = '../Trained_Models/best_lstm_model.h5'
     best_model.save(model_save_path)
