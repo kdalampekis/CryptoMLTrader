@@ -32,20 +32,20 @@ def build_model(lstm_units=50, num_layers=1, optimizer='adam', learning_rate=0.0
 def main():
 
     # Wrap the model with KerasRegressor
-    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=1)
+    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=3)
 
     # Define the parameter grid to search
     param_grid = {
         'lstm_units': [30, 50, 100],  # Number of neurons in LSTM layer
         'num_layers': [1, 2, 3],      # Number of LSTM layers
-        'optimizer': ['adam', 'sgd'],
+        'optimizer': ['adam'],   # previous "sgd"
         'learning_rate': [0.001, 0.01, 0.1],  # Learning rate
         'dropout_rate': [0.0, 0.2, 0.5],  # Dropout for regularization
-        'batch_size': [16, 32, 64],   # Size of each batch
-        'epochs': [50, 100],          # Number of epochs
+        'batch_size': [32, 64],   # Size of each batch before  had also 16
+        'epochs': [100],          # Number of epochs previous 50
         'activation': ['relu', 'tanh'],  # Activation function
-        'regularizer_l1': [0.0, 0.01],  # L1 regularization
-        'regularizer_l2': [0.0, 0.01],  # L2 regularization
+        'regularizer_l1': [0.0],  # L1 regularization previous 0.01
+        'regularizer_l2': [0.0],  # L2 regularization previous 0.01
     }
 
     # Use TimeSeriesSplit for cross-validation
