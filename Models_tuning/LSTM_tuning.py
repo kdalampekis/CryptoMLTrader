@@ -32,7 +32,7 @@ def build_model(lstm_units=50, num_layers=1, optimizer='adam', learning_rate=0.0
 def main():
 
     # Wrap the model with KerasRegressor
-    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=0)
+    model = keras.wrappers.scikit_learn.KerasRegressor(build_fn=build_model, verbose=1)
 
     # Define the parameter grid to search
     param_grid = {
@@ -65,7 +65,7 @@ def main():
     best_model.fit(X_train, y_train, epochs=best_params['epochs'], batch_size=best_params['batch_size'], verbose=0)
 
     # Save the best model
-    model_save_path = '../Trained_Models/best_lstm_model.h5'  # Update the path
+    model_save_path = '../Trained_Models/best_lstm_model.h5'
     best_model.save(model_save_path)
 
     print(f"Model saved to {model_save_path}")

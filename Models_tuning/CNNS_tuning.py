@@ -8,6 +8,7 @@ from tensorflow.python.keras.layers import Dense, Conv1D, Flatten
 from keras.layers import BatchNormalization
 from tensorflow.python.keras.callbacks import EarlyStopping
 from math import sqrt
+import tensorflow as tf
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import data_splitting
 
@@ -84,8 +85,8 @@ def main():
     best_model.fit(X, y, epochs=100, batch_size=32, callbacks=[early_stopping], verbose=0)
 
     # Save the best model
-    model_save_path = os.path.join('../Trained_Models', 'best_cnn_model.h5')
-    best_model.save(model_save_path)
+    model_save_path = os.path.join('../Trained_Models', 'best_cnn_model')
+    tf.saved_model.save(best_model, model_save_path)
 
     print(f"Model saved to {model_save_path}")
 

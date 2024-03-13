@@ -1,6 +1,7 @@
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error
 from math import sqrt
+import pandas as pd
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -55,7 +56,8 @@ def main():
     print('Best ARIMA%s RMSE=%.3f' % (best_cfg, best_score))
 
     # Train the best model on the combined train and validation data
-    model_fit = ARIMA(train_data.append(val_data), order=best_cfg).fit()
+    combined_data = pd.concat([train_data, val_data])  # Use pd.concat to combine Series
+    model_fit = ARIMA(combined_data, order=best_cfg).fit()
 
     # Evaluate on the test set
     predictions = model_fit.forecast(steps=len(test_data))

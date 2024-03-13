@@ -138,5 +138,6 @@ def main():
                 avg_val_rmse = np.mean([val_rmse for val_rmse, _ in scores])
                 print(f"\t{dataset_name}: Avg Validation RMSE = {avg_val_rmse}")
 
+
 if __name__ == '__main__':
     main()

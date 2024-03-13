@@ -37,7 +37,7 @@ def train_and_evaluate_prophet(df, target_column):
         m.fit(df_prophet)
 
         # Cross-validation and performance metrics
-        df_cv = cross_validation(m, initial='275 days', period='30 days', horizon='1 days', parallel="processes")
+        df_cv = cross_validation(m, initial='730 days', period='180 days', horizon='60 days', parallel="processes")
         df_p = performance_metrics(df_cv, rolling_window=1)
 
         # Collect and store results
@@ -50,6 +50,8 @@ def train_and_evaluate_prophet(df, target_column):
 
     # Identify and return the best parameters based on RMSE
     best_params = sorted(results, key=lambda x: x['rmse'])[0]
+    print(best_params)
+    best_params = sorted(results, key=lambda x: x['rmse'])[0]['params']
 
     # Retrain the best model
     best_model = Prophet(
