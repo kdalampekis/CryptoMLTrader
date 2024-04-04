@@ -10,7 +10,10 @@ from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.seasonal import STL
 import talib
 
-
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
 # Function to perform seasonal decomposition using STL
 def seasonal_decomposition(df):
     df.set_index('ds', inplace=True)
@@ -149,16 +152,16 @@ def filter_top_features(df, target='y', n_features=25):
     features_to_keep = top_features + ['y', 'low', 'ds']
     return df[features_to_keep]
 
-csv_file_path = 'crypto_last30days.csv'
+csv_file_path = 'Data/crypto_last30days.csv'
 df_api = pd.read_csv(csv_file_path, delimiter=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow'])
 df_api.rename(columns={
-        'time': 'ds',
+        'timestamp': 'ds',
         'open': 'open',
         'high': 'y',
         'low': 'low',
         'close': 'close',
-        'volumefrom': 'volumefrom',
-        'volumeto': 'volumeto'
+        'volume': 'volumefrom',
+        'marketCap': 'volumeto'
     }, inplace=True)
 df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
 df_api['ds'] = pd.to_datetime(df_api['ds'])
@@ -183,11 +186,12 @@ df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 df_api = calculate_technical_indicators(df_api)
 df_api = preprocess_data(df_api)
 df_api_sorted = df_api.sort_values(by='ds', ascending=True)
-df_api_sorted.drop(columns=['day_of_week'], inplace=True)
+df_api_sorted.drop(columns=['day_of_week', 'close_lag_30', 'MACD_Histogram'], inplace=True)
+print(df_api_sorted)
 features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
                          'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
-                         'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
-                         'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
+                         'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator',
+                         'close_lag_1', 'close_lag_7', 'close_to_volume_ratio', 'close_mean',
                          'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week_cos', 'day_of_week_sin',
                          'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
 minmax_scaler = MinMaxScaler()
@@ -196,7 +200,7 @@ df_api_sorted_filtered = filter_top_features(df_api_sorted)
 print(df_api_sorted_filtered)
 X_real_time = df_api_sorted_filtered.drop(['y', 'low', 'ds'], axis=1).values
 X_real_time_reshaped = X_real_time.reshape((X_real_time.shape[0], 1, X_real_time.shape[1]))
-lstm_model = load_model('../Trained_Models/best_lstm_model.h5')
+lstm_model = load_model('Trained_Models/best_lstm_model.h5')
 predictions = lstm_model.predict(X_real_time_reshaped)
 predictions_in_original_scale = minmax_scaler.inverse_transform(predictions)
 print(predictions_in_original_scale)
