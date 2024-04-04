@@ -175,13 +175,13 @@ if response.status_code == 200:
     df_api = pd.DataFrame(data)
     df_api.drop(['conversionType', 'conversionSymbol'], axis=1, inplace=True)
     df_api.rename(columns={
-        'timestamp': 'ds',
+        'time': 'ds',
         'open': 'open',
         'high': 'y',
         'low': 'low',
         'close': 'close',
-        'volume': 'volumefrom',
-        'marketCap': 'volumeto'
+        'volumefrom': 'volumefrom',
+        'volumeto': 'volumeto'
     }, inplace=True)
     df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
     df_api['ds'] = pd.to_datetime(df_api['ds'])
