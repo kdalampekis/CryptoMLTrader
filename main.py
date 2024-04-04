@@ -217,5 +217,12 @@ if response.status_code == 200:
     df_api_sorted[features_to_scale] = minmax_scaler.fit_transform(df_api_sorted[features_to_scale])
     df_api_sorted_filtered = filter_top_features(df_api_sorted)
     print(df_api_sorted_filtered)
+    X_real_time = df_api_sorted_filtered.drop(['y', 'low', 'ds'], axis=1).values
+    X_real_time_reshaped = X_real_time.reshape((X_real_time.shape[0], 1, X_real_time.shape[1]))
+    lstm_model = load_model('../Trained_Models/best_lstm_model.h5')
+    predictions = lstm_model.predict(X_real_time_reshaped)
+    predictions_in_original_scale = minmax_scaler.inverse_transform(predictions)
+    print(predictions_in_original_scale)
 else:
     print('Error:', response.status_code)
+
