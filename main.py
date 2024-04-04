@@ -149,32 +149,9 @@ def filter_top_features(df, target='y', n_features=25):
     features_to_keep = top_features + ['y', 'low', 'ds']
     return df[features_to_keep]
 
-
-# Replace 'YOUR_API_KEY' with your actual API key from CryptoCompare
-api_key = '5e634ddb33c885608fd2ae22be8b4e2af36c5675fad653eae97ad8a2c8811864'
-
-# Base URL for the CryptoCompare API
-base_url = 'https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-
-# Parameters for the API request
-params = {
-    'fsym': 'SOL',        # Symbol for Solana
-    'tsym': 'USD',        # Convert prices to USD
-    'limit': 30,          # Limit to the last 30 days of data
-    'api_key': api_key     # Your API key
-}
-
-
-# Fetch historical data from the CryptoCompare API
-
-
-response = requests.get(base_url, params=params)
-
-if response.status_code == 200:
-    data = response.json()['Data']['Data']
-    df_api = pd.DataFrame(data)
-    df_api.drop(['conversionType', 'conversionSymbol'], axis=1, inplace=True)
-    df_api.rename(columns={
+csv_file_path = 'crypto_last30days.csv'
+df_api = pd.read_csv(csv_file_path, delimiter=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow'])
+df_api.rename(columns={
         'time': 'ds',
         'open': 'open',
         'high': 'y',
@@ -183,46 +160,45 @@ if response.status_code == 200:
         'volumefrom': 'volumefrom',
         'volumeto': 'volumeto'
     }, inplace=True)
-    df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
-    df_api['ds'] = pd.to_datetime(df_api['ds'])
-    df_api['date'] = df_api['ds'].dt.date
-    df_api.drop(columns=['ds'], inplace=True)
-    df_api.rename(columns={'date': 'ds'}, inplace=True)
-    df_api['ds'] = pd.to_datetime(df_api['ds'])
-    df_api['timeLow'] = pd.to_datetime(df_api['timeLow'])
-    df_api['timeHigh'] = pd.to_datetime(df_api['timeHigh'])
+df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
+df_api['ds'] = pd.to_datetime(df_api['ds'])
+df_api['date'] = df_api['ds'].dt.date
+df_api.drop(columns=['ds'], inplace=True)
+df_api.rename(columns={'date': 'ds'}, inplace=True)
+df_api['ds'] = pd.to_datetime(df_api['ds'])
+df_api['timeLow'] = pd.to_datetime(df_api['timeLow'])
+df_api['timeHigh'] = pd.to_datetime(df_api['timeHigh'])
 
     # Extract relevant features
-    df_api['hour_low'] = df_api['timeLow'].dt.hour
-    df_api['minute_low'] = df_api['timeLow'].dt.minute
-    df_api['second_low'] = df_api['timeLow'].dt.second
+df_api['hour_low'] = df_api['timeLow'].dt.hour
+df_api['minute_low'] = df_api['timeLow'].dt.minute
+df_api['second_low'] = df_api['timeLow'].dt.second
 
-    df_api['hour_high'] = df_api['timeHigh'].dt.hour
-    df_api['minute_high'] = df_api['timeHigh'].dt.minute
-    df_api['second_high'] = df_api['timeHigh'].dt.second
-    df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
+df_api['hour_high'] = df_api['timeHigh'].dt.hour
+df_api['minute_high'] = df_api['timeHigh'].dt.minute
+df_api['second_high'] = df_api['timeHigh'].dt.second
+df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 
     # Extract relevant features
-    df_api = calculate_technical_indicators(df_api)
-    df_api = preprocess_data(df_api)
-    df_api_sorted = df_api.sort_values(by='ds', ascending=True)
-    df_api_sorted.drop(columns=['day_of_week'], inplace=True)
-    features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
+df_api = calculate_technical_indicators(df_api)
+df_api = preprocess_data(df_api)
+df_api_sorted = df_api.sort_values(by='ds', ascending=True)
+df_api_sorted.drop(columns=['day_of_week'], inplace=True)
+features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
                          'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
                          'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator', 'MACD_Histogram',
                          'close_lag_1', 'close_lag_7', 'close_lag_30', 'close_to_volume_ratio', 'close_mean',
                          'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week_cos', 'day_of_week_sin',
                          'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
-    minmax_scaler = MinMaxScaler()
-    df_api_sorted[features_to_scale] = minmax_scaler.fit_transform(df_api_sorted[features_to_scale])
-    df_api_sorted_filtered = filter_top_features(df_api_sorted)
-    print(df_api_sorted_filtered)
-    X_real_time = df_api_sorted_filtered.drop(['y', 'low', 'ds'], axis=1).values
-    X_real_time_reshaped = X_real_time.reshape((X_real_time.shape[0], 1, X_real_time.shape[1]))
-    lstm_model = load_model('../Trained_Models/best_lstm_model.h5')
-    predictions = lstm_model.predict(X_real_time_reshaped)
-    predictions_in_original_scale = minmax_scaler.inverse_transform(predictions)
-    print(predictions_in_original_scale)
-else:
-    print('Error:', response.status_code)
+minmax_scaler = MinMaxScaler()
+df_api_sorted[features_to_scale] = minmax_scaler.fit_transform(df_api_sorted[features_to_scale])
+df_api_sorted_filtered = filter_top_features(df_api_sorted)
+print(df_api_sorted_filtered)
+X_real_time = df_api_sorted_filtered.drop(['y', 'low', 'ds'], axis=1).values
+X_real_time_reshaped = X_real_time.reshape((X_real_time.shape[0], 1, X_real_time.shape[1]))
+lstm_model = load_model('../Trained_Models/best_lstm_model.h5')
+predictions = lstm_model.predict(X_real_time_reshaped)
+predictions_in_original_scale = minmax_scaler.inverse_transform(predictions)
+print(predictions_in_original_scale)
+
 
