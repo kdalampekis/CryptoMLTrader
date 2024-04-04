@@ -9,6 +9,8 @@ from tensorflow.python.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.seasonal import STL
 import talib
+from datetime import datetime, timedelta
+
 
 
 # Function to perform seasonal decomposition using STL
@@ -151,28 +153,31 @@ def filter_top_features(df, target='y', n_features=25):
 
 
 # Replace 'YOUR_API_KEY' with your actual API key from CryptoCompare
-api_key = '5e634ddb33c885608fd2ae22be8b4e2af36c5675fad653eae97ad8a2c8811864'
+api_key = 'de87323c-9bf5-46cc-a65a-5a0a0ea658f5'
 
-# Base URL for the CryptoCompare API
-base_url = 'https://min-api.cryptocompare.com/data/v2/histoday'
+url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical'
 
-# Parameters for the API request
-params = {
-    'fsym': 'SOL',        # Symbol for Solana
-    'tsym': 'USD',        # Convert prices to USD
-    'limit': 30,          # Limit to the last 30 days of data
-    'api_key': api_key     # Your API key
+# Calculate 30 days before today for the start time
+time_start = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+time_end = datetime.now().strftime('%Y-%m-%d')  # Today for the end time
+
+parameters = {
+    'symbol': 'SOL',
+    'time_start': time_start,
+    'time_end': time_end,
+    'interval': 'daily'
 }
 
+headers = {
+    'Accepts': 'application/json',
+    'X-CMC_PRO_API_KEY': api_key,
+}
 
-# Fetch historical data from the CryptoCompare API
-
-
-response = requests.get(base_url, params=params)
+response = requests.get(url, headers=headers, params=parameters)
 
 if response.status_code == 200:
-    data = response.json()['Data']['Data']
-    df_api = pd.DataFrame(data)
+    data = response.json()
+    df_api = pd.DataFrame(data['data']['SOL']['quotes'])
     df_api.drop(['conversionType', 'conversionSymbol'], axis=1, inplace=True)
     df_api.rename(columns={
         'time': 'ds',
