@@ -92,7 +92,7 @@ def calculate_additional_features(df):
     # Price Oscillators
     df['Stochastic_Oscillator'] = talib.STOCH(df['y'], df['low'], df['close'])[1]
     macd, signal, hist = talib.MACD(df['close'])
-    df['MACD_Histogram'] = hist
+
 
     # Lag features
     lag_periods = [1, 7, 30]  # Lag by 1 day, 1 week, and 1 month
@@ -118,6 +118,30 @@ def calculate_additional_features(df):
     df = seasonal_decomposition(df)
 
     return df
+
+
+def calculate_MACD(df, ema_short_max=12, ema_long_max=26, signal_max=9):
+    # Determine the maximum available length of data
+    available_length = len(df['close'].dropna())
+
+    # Adjust the periods based on the available length
+    ema_short = min(ema_short_max, available_length - 1)
+    ema_long = min(ema_long_max, available_length - 1)
+    signal_period = min(signal_max, available_length - 1)
+
+    # Ensure that we have enough data to compute long EMA
+    if available_length > ema_long:
+        # Calculate the MACD
+        exp1 = df['close'].ewm(span=ema_short, adjust=False).mean()
+        exp2 = df['close'].ewm(span=ema_long, adjust=False).mean()
+        macd = exp1 - exp2
+        signal = macd.ewm(span=signal_period, adjust=False).mean()
+        hist = macd - signal
+    else:
+        # Not enough data to compute MACD
+        macd, signal, hist = [pd.Series([np.nan] * len(df)) for _ in range(3)]
+
+    return macd, signal, hist
 
 
 def preprocess_data(df):
@@ -184,25 +208,46 @@ df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 
     # Extract relevant features
 df_api = calculate_technical_indicators(df_api)
+df_api['MACD'], df_api['MACD_signal'], df_api['MACD_Histogram'] = calculate_MACD(df_api)
 df_api = preprocess_data(df_api)
-df_api_sorted = df_api.sort_values(by='ds', ascending=True)
-df_api_sorted.drop(columns=['day_of_week', 'close_lag_30', 'MACD_Histogram'], inplace=True)
+df_api_sorted = df_api.sort_values(by='ds', ascending=False)
+df_api_sorted.drop(columns=['day_of_week'], inplace=True)
 print(df_api_sorted)
-features_to_scale = ['open', 'y', 'low', 'close', 'volumefrom', 'volumeto', 'SMA_20', 'EMA_12', 'EMA_26',
-                         'RSI', 'BB_upper', 'BB_lower', 'ROC_1', 'ROC_7', 'ROC_30', 'VROC_1', 'VROC_7', 'VROC_30',
-                         'PMO_12_26', 'OBV', 'PVT', 'RVI', 'CMF', 'ATR', 'Stochastic_Oscillator',
-                         'close_lag_1', 'close_lag_7', 'close_to_volume_ratio', 'close_mean',
-                         'close_std', 'close_detrended', 'year', 'month', 'day', 'day_of_week_cos', 'day_of_week_sin',
-                         'hour_low', 'minute_low', 'second_low', 'hour_high', 'minute_high', 'second_high']
-minmax_scaler = MinMaxScaler()
-df_api_sorted[features_to_scale] = minmax_scaler.fit_transform(df_api_sorted[features_to_scale])
-df_api_sorted_filtered = filter_top_features(df_api_sorted)
-print(df_api_sorted_filtered)
-X_real_time = df_api_sorted_filtered.drop(['y', 'low', 'ds'], axis=1).values
-X_real_time_reshaped = X_real_time.reshape((X_real_time.shape[0], 1, X_real_time.shape[1]))
-lstm_model = load_model('Trained_Models/best_lstm_model.h5')
-predictions = lstm_model.predict(X_real_time_reshaped)
-predictions_in_original_scale = minmax_scaler.inverse_transform(predictions)
-print(predictions_in_original_scale)
 
+# List of features used during training
+used_features = [
+    'close', 'close_detrended', 'open', 'close_lag_1', 'volumeto', 'ATR', 'OBV',
+    'VROC_30', 'VROC_1', 'volumefrom', 'VROC_7', 'hour_low', 'minute_high',
+    'minute_low', 'close_to_volume_ratio', 'EMA_12', 'day', 'RSI',
+    'close_lag_30', 'CMF', 'close_std', 'ROC_7', 'MACD_Histogram', 'ROC_30',
+    'hour_high', 'y', 'low', 'ds'
+]
 
+# Ensure all required features are present
+df_api_sorted = df_api_sorted[used_features]
+
+# Initialize and fit the scaler for the features
+feature_scaler = MinMaxScaler()
+df_scaled = df_api_sorted.copy()  # Copy df to keep original separate
+features_to_scale = df_api_sorted.columns.difference(['y', 'low', 'ds'])  # Exclude targets and date
+df_scaled[features_to_scale] = feature_scaler.fit_transform(df_api_sorted[features_to_scale])
+
+# Separate features and targets for prediction
+X = df_scaled.drop(['y', 'low', 'ds'], axis=1).values
+X = X.reshape((X.shape[0], 1, X.shape[1]))  # Reshape for LSTM
+
+# Load the trained LSTM model
+model_path = 'Trained_Models/best_lstm_model.h5'
+model = load_model(model_path)
+
+# Predict using the LSTM model
+predictions = model.predict(X)
+
+# Initialize and fit the scaler for the targets if they were scaled during training
+target_scaler = MinMaxScaler()
+df_targets = df_api_sorted[['y']]
+target_scaler.fit(df_targets)
+predictions_scaled_back = target_scaler.inverse_transform(predictions)
+
+# Print the original scale predictions
+print("Predictions in original scale:", predictions_scaled_back)
