@@ -176,78 +176,84 @@ def filter_top_features(df, target='y', n_features=25):
     features_to_keep = top_features + ['y', 'low', 'ds']
     return df[features_to_keep]
 
-csv_file_path = 'Data/crypto_last30days.csv'
-df_api = pd.read_csv(csv_file_path, delimiter=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow'])
-df_api.rename(columns={
-        'timestamp': 'ds',
-        'open': 'open',
-        'high': 'y',
-        'low': 'low',
-        'close': 'close',
-        'volume': 'volumefrom',
-        'marketCap': 'volumeto'
-    }, inplace=True)
-df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
-df_api['ds'] = pd.to_datetime(df_api['ds'])
-df_api['date'] = df_api['ds'].dt.date
-df_api.drop(columns=['ds'], inplace=True)
-df_api.rename(columns={'date': 'ds'}, inplace=True)
-df_api['ds'] = pd.to_datetime(df_api['ds'])
-df_api['timeLow'] = pd.to_datetime(df_api['timeLow'])
-df_api['timeHigh'] = pd.to_datetime(df_api['timeHigh'])
 
-    # Extract relevant features
-df_api['hour_low'] = df_api['timeLow'].dt.hour
-df_api['minute_low'] = df_api['timeLow'].dt.minute
-df_api['second_low'] = df_api['timeLow'].dt.second
+def main():
 
-df_api['hour_high'] = df_api['timeHigh'].dt.hour
-df_api['minute_high'] = df_api['timeHigh'].dt.minute
-df_api['second_high'] = df_api['timeHigh'].dt.second
-df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
+    csv_file_path = 'Data/crypto_last30days.csv'
+    df_api = pd.read_csv(csv_file_path, delimiter=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow'])
+    df_api.rename(columns={
+            'timestamp': 'ds',
+            'open': 'open',
+            'high': 'y',
+            'low': 'low',
+            'close': 'close',
+            'volume': 'volumefrom',
+            'marketCap': 'volumeto'
+        }, inplace=True)
+    df_api.drop(columns=['timeOpen', 'timeClose'], inplace=True)
+    df_api['ds'] = pd.to_datetime(df_api['ds'])
+    df_api['date'] = df_api['ds'].dt.date
+    df_api.drop(columns=['ds'], inplace=True)
+    df_api.rename(columns={'date': 'ds'}, inplace=True)
+    df_api['ds'] = pd.to_datetime(df_api['ds'])
+    df_api['timeLow'] = pd.to_datetime(df_api['timeLow'])
+    df_api['timeHigh'] = pd.to_datetime(df_api['timeHigh'])
 
-    # Extract relevant features
-df_api = calculate_technical_indicators(df_api)
-df_api['MACD'], df_api['MACD_signal'], df_api['MACD_Histogram'] = calculate_MACD(df_api)
-df_api = preprocess_data(df_api)
-df_api_sorted = df_api.sort_values(by='ds', ascending=False)
-df_api_sorted.drop(columns=['day_of_week'], inplace=True)
-print(df_api_sorted)
+        # Extract relevant features
+    df_api['hour_low'] = df_api['timeLow'].dt.hour
+    df_api['minute_low'] = df_api['timeLow'].dt.minute
+    df_api['second_low'] = df_api['timeLow'].dt.second
 
-# List of features used during training
-used_features = [
-    'close', 'close_detrended', 'open', 'close_lag_1', 'volumeto', 'ATR', 'OBV',
-    'VROC_30', 'VROC_1', 'volumefrom', 'VROC_7', 'hour_low', 'minute_high',
-    'minute_low', 'close_to_volume_ratio', 'EMA_12', 'day', 'RSI',
-    'close_lag_30', 'CMF', 'close_std', 'ROC_7', 'MACD_Histogram', 'ROC_30',
-    'hour_high', 'y', 'low', 'ds'
-]
+    df_api['hour_high'] = df_api['timeHigh'].dt.hour
+    df_api['minute_high'] = df_api['timeHigh'].dt.minute
+    df_api['second_high'] = df_api['timeHigh'].dt.second
+    df_api.drop(columns=['timeLow', 'timeHigh'], inplace=True)
 
-# Ensure all required features are present
-df_api_sorted = df_api_sorted[used_features]
+        # Extract relevant features
+    df_api = calculate_technical_indicators(df_api)
+    df_api['MACD'], df_api['MACD_signal'], df_api['MACD_Histogram'] = calculate_MACD(df_api)
+    df_api = preprocess_data(df_api)
+    df_api_sorted = df_api.sort_values(by='ds', ascending=False)
+    df_api_sorted.drop(columns=['day_of_week'], inplace=True)
 
-# Initialize and fit the scaler for the features
-feature_scaler = MinMaxScaler()
-df_scaled = df_api_sorted.copy()  # Copy df to keep original separate
-features_to_scale = df_api_sorted.columns.difference(['y', 'low', 'ds'])  # Exclude targets and date
-df_scaled[features_to_scale] = feature_scaler.fit_transform(df_api_sorted[features_to_scale])
+    # List of features used during training
+    used_features = [
+        'close', 'close_detrended', 'open', 'close_lag_1', 'volumeto', 'ATR', 'OBV',
+        'VROC_30', 'VROC_1', 'volumefrom', 'VROC_7', 'hour_low', 'minute_high',
+        'minute_low', 'close_to_volume_ratio', 'EMA_12', 'day', 'RSI',
+        'close_lag_30', 'CMF', 'close_std', 'ROC_7', 'MACD_Histogram', 'ROC_30',
+        'hour_high', 'y', 'low', 'ds'
+    ]
 
-# Separate features and targets for prediction
-X = df_scaled.drop(['y', 'low', 'ds'], axis=1).values
-X = X.reshape((X.shape[0], 1, X.shape[1]))  # Reshape for LSTM
+    # Ensure all required features are present
+    df_api_sorted = df_api_sorted[used_features]
 
-# Load the trained LSTM model
-model_path = 'Trained_Models/best_lstm_model.h5'
-model = load_model(model_path)
+    # Initialize and fit the scaler for the features
+    feature_scaler = MinMaxScaler()
+    df_scaled = df_api_sorted.copy()  # Copy df to keep original separate
+    features_to_scale = df_api_sorted.columns.difference(['y', 'low', 'ds'])  # Exclude targets and date
+    df_scaled[features_to_scale] = feature_scaler.fit_transform(df_api_sorted[features_to_scale])
 
-# Predict using the LSTM model
-predictions = model.predict(X)
+    # Separate features and targets for prediction
+    X = df_scaled.drop(['y', 'low', 'ds'], axis=1).values
+    X = X.reshape((X.shape[0], 1, X.shape[1]))  # Reshape for LSTM
 
-# Initialize and fit the scaler for the targets if they were scaled during training
-target_scaler = MinMaxScaler()
-df_targets = df_api_sorted[['y']]
-target_scaler.fit(df_targets)
-predictions_scaled_back = target_scaler.inverse_transform(predictions)
+    # Load the trained LSTM model
+    model_path = 'Trained_Models/best_lstm_model.h5'
+    model = load_model(model_path)
 
-# Print the original scale predictions
-print("Predictions in original scale:", predictions_scaled_back)
+    # Predict using the LSTM model
+    predictions = model.predict(X)
+
+    # Initialize and fit the scaler for the targets if they were scaled during training
+    target_scaler = MinMaxScaler()
+    df_targets = df_api_sorted[['y']]
+    target_scaler.fit(df_targets)
+    predictions_scaled_back = target_scaler.inverse_transform(predictions)
+
+    # Print the original scale predictions
+    print("Predictions in original scale:", predictions_scaled_back)
+
+
+if __name__ == '__main__':
+    main()
